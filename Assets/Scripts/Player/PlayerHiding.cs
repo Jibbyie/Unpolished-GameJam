@@ -7,7 +7,6 @@ public class PlayerHiding : MonoBehaviour
 
     private void Awake()
     {
-        // Get the PlayerController component from this same GameObject
         playerController = GetComponent<PlayerController>();
     }
 
