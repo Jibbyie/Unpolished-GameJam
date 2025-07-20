@@ -1,0 +1,33 @@
+using UnityEngine;
+
+public class PlayerHiding : MonoBehaviour
+{
+    // A reference to the script that holds the 'isHiding' variable
+    private PlayerController playerController;
+
+    private void Awake()
+    {
+        // Get the PlayerController component from this same GameObject
+        playerController = GetComponent<PlayerController>();
+    }
+
+    private void OnTriggerEnter2D(Collider2D other)
+    {
+        // Check if the object we entered is tagged as a "HideSpot"
+        if (other.gameObject.CompareTag("HideSpot"))
+        {
+            playerController.isHiding = true;
+            Debug.Log("Player is now hiding.");
+        }
+    }
+
+    private void OnTriggerExit2D(Collider2D other)
+    {
+        // Check if the object we exited was a "HideSpot"
+        if (other.gameObject.CompareTag("HideSpot"))
+        {
+            playerController.isHiding = false;
+            Debug.Log("Player is no longer hiding.");
+        }
+    }
+}
