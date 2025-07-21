@@ -5,15 +5,33 @@ using System.Collections;
 public class GameManager : MonoBehaviour
 {
     private int itemsCollected = 0;
+
+    [Header("References")]
     public GameObject jormungandrObject;
+    public PlayerStats playerStats;
 
     [Header("UI Elements")]
     [SerializeField] private TMP_Text itemCountText;
     [SerializeField] private TMP_Text memoryText; // The UI element for displaying memories
+    [SerializeField] private TMP_Text oxygenText;
 
     [Header("Timings")]
     [SerializeField] private float textFadeTime = 1f; // How long to fade in/out
     [SerializeField] private float textDisplayTime = 2.5f; // How long the memory stays on screen
+
+    private void Awake()
+    {
+        playerStats = FindFirstObjectByType<PlayerStats>();
+    }
+    private void Update()
+    {
+        oxygenText.text = "Oxygen: " + playerStats.currentOxygen.ToString("F0");
+    }
+
+    public void TriggerGameOver()
+    {
+        Debug.Log("You Died");
+    }
 
     public void OnItemCollected(int itemID, string newMemoryText)
     {

@@ -2,7 +2,6 @@ using UnityEngine;
 
 public class PlayerHiding : MonoBehaviour
 {
-    // A reference to the script that holds the 'isHiding' variable
     private PlayerController playerController;
 
     private void Awake()
