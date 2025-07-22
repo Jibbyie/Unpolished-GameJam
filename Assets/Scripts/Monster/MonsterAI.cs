@@ -1,66 +1,100 @@
+using Live2D.Cubism.Core;
 using UnityEngine;
 
 public class MonsterAI : MonoBehaviour
 {
-    // --- References & Settings ---
-    public PlayerController player; 
+    [Header("References")]
+    public PlayerController player;
+
+    [Header("Patrol Settings")]
     public float speed = 2f;
-    public float patrolDuration = 20f; // How long it stays active
-    public float timeToCatch = 5f;     // How long player can be seen before caught
+    public float patrolDuration = 20f;
+    public float timeToCatch = 5f;
 
     [Header("Spawning Settings")]
-    public float minSpawnDistance = 4f; 
-    public float maxSpawnDistance = 8f; 
+    public float minSpawnDistance = 4f;
+    public float maxSpawnDistance = 8f;
+
+    [Header("Behavior Settings")]
+    public float headTurnMagnitude = 30f;
+    public float flipDeadZone = 1.5f;
 
     private float patrolTimer;
     private float spottedTimer;
+    private CubismModel cubismModel;
+    private CubismParameter headParameter;
+
+    private void Awake()
+    {
+        cubismModel = GetComponentInChildren<CubismModel>();
+    }
 
     private void OnEnable()
     {
-        // 1. Reset timers
         patrolTimer = patrolDuration;
         spottedTimer = timeToCatch;
 
-        // 2. Find a random spawn position near the player
-        Vector2 randomDirection = Random.insideUnitCircle.normalized; // Get a random direction
-        float randomDistance = Random.Range(minSpawnDistance, maxSpawnDistance); // Get a random distance
+        Vector2 randomDirection = Random.insideUnitCircle.normalized;
+        float randomDistance = Random.Range(minSpawnDistance, maxSpawnDistance);
         Vector2 spawnPosition = (Vector2)player.transform.position + (randomDirection * randomDistance);
 
-        // 3. Set the monster's position
         transform.position = spawnPosition;
+
+        if (cubismModel != null)
+        {
+            headParameter = cubismModel.Parameters.FindById("Param");
+        }
     }
 
     private void Update()
     {
-        // --- Patrol Lifespan Timer ---
         patrolTimer -= Time.deltaTime;
         if (patrolTimer <= 0f)
         {
-            gameObject.SetActive(false); // Despawn when time is up
-            return; // Stop executing the rest of the code in this frame
+            gameObject.SetActive(false);
+            return;
         }
 
-        // --- Movement and Detection ---
+        FlipAndLook();
+
         bool isPlayerVisible = !player.isHiding;
 
         if (isPlayerVisible)
         {
-            // If player is NOT hiding:
-            // 1. Move towards the player
             transform.position = Vector2.MoveTowards(transform.position, player.transform.position, speed * Time.deltaTime);
 
-            // 2. Count down the "spotted" timer
             spottedTimer -= Time.deltaTime;
             if (spottedTimer <= 0f)
             {
-                // Player is caught!
                 Debug.Log("GAME OVER - Player is caught!");
             }
         }
         else
         {
-            // If player IS hiding, reset the spotted timer.
             spottedTimer = timeToCatch;
         }
+    }
+
+    private void FlipAndLook()
+    {
+        if (player == null || headParameter == null) return;
+
+        float directionToPlayerX = player.transform.position.x - transform.position.x;
+
+        if (directionToPlayerX > flipDeadZone && transform.localScale.x > 0)
+        {
+            transform.localScale = new Vector3(-1, 1, 1);
+        }
+        else if (directionToPlayerX < -flipDeadZone && transform.localScale.x < 0)
+        {
+            transform.localScale = new Vector3(1, 1, 1);
+        }
+
+        Vector2 forwardVector = (transform.localScale.x > 0) ? Vector2.left : Vector2.right;
+        Vector2 directionToPlayer = player.transform.position - transform.position;
+        float angle = Vector2.SignedAngle(forwardVector, directionToPlayer);
+
+        // Invert the final angle to match the model's parameter setup
+        headParameter.Value = Mathf.Clamp(-angle, -headTurnMagnitude, headTurnMagnitude);
     }
 }
