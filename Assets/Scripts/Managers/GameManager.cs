@@ -1,6 +1,7 @@
 using TMPro;
 using UnityEngine;
 using System.Collections;
+using UnityEngine.UI;
 
 public class GameManager : MonoBehaviour
 {
@@ -12,20 +13,41 @@ public class GameManager : MonoBehaviour
 
     [Header("UI Elements")]
     [SerializeField] private TMP_Text itemCountText;
-    [SerializeField] private TMP_Text memoryText; // The UI element for displaying memories
+    [SerializeField] private TMP_Text memoryText;
     [SerializeField] private TMP_Text oxygenText;
+    [SerializeField] private Image hidingTintImage;
 
     [Header("Timings")]
-    [SerializeField] private float textFadeTime = 1f; // How long to fade in/out
-    [SerializeField] private float textDisplayTime = 2.5f; // How long the memory stays on screen
+    [SerializeField] private float textFadeTime = 1f;
+    [SerializeField] private float textDisplayTime = 2.5f;
+    [SerializeField] private float tintFadeDuration = 0.5f;
+
+    private Coroutine runningFadeCoroutine;
 
     private void Awake()
     {
         playerStats = FindFirstObjectByType<PlayerStats>();
     }
+
     private void Update()
     {
-        oxygenText.text = "Oxygen: " + playerStats.currentOxygen.ToString("F0");
+        if (playerStats != null)
+        {
+            oxygenText.text = "Oxygen: " + playerStats.currentOxygen.ToString("F0");
+        }
+    }
+
+    public void SetHidingVignette(bool isHiding)
+    {
+        if (hidingTintImage == null) return;
+
+        if (runningFadeCoroutine != null)
+        {
+            StopCoroutine(runningFadeCoroutine);
+        }
+
+        float targetAlpha = isHiding ? 0.75f : 0f;
+        runningFadeCoroutine = StartCoroutine(FadeTintRoutine(targetAlpha, tintFadeDuration));
     }
 
     public void TriggerGameOver()
@@ -38,7 +60,6 @@ public class GameManager : MonoBehaviour
         itemsCollected++;
         itemCountText.text = "Items Collected: " + itemsCollected.ToString();
 
-        // Set the text and start the routine to show it
         memoryText.text = newMemoryText;
         StartCoroutine(ShowMemoryRoutine());
 
@@ -58,12 +79,27 @@ public class GameManager : MonoBehaviour
 
     private IEnumerator ShowMemoryRoutine()
     {
-        yield return FadeTextToFullAlpha(textFadeTime, memoryText); // Fade In
-        yield return new WaitForSeconds(textDisplayTime);           // Wait
-        yield return FadeTextToZeroAlpha(textFadeTime, memoryText); // Fade Out
+        yield return FadeTextToFullAlpha(textFadeTime, memoryText);
+        yield return new WaitForSeconds(textDisplayTime);
+        yield return FadeTextToZeroAlpha(textFadeTime, memoryText);
     }
 
-    // --- FADE COROUTINES --- // https://discussions.unity.com/t/fading-in-out-gui-text-with-c-solved/613416/2 
+    private IEnumerator FadeTintRoutine(float targetAlpha, float duration)
+    {
+        float startAlpha = hidingTintImage.color.a;
+        float time = 0f;
+
+        while (time < duration)
+        {
+            time += Time.deltaTime;
+            float newAlpha = Mathf.Lerp(startAlpha, targetAlpha, time / duration);
+            hidingTintImage.color = new Color(hidingTintImage.color.r, hidingTintImage.color.g, hidingTintImage.color.b, newAlpha);
+            yield return null;
+        }
+
+        hidingTintImage.color = new Color(hidingTintImage.color.r, hidingTintImage.color.g, hidingTintImage.color.b, targetAlpha);
+    }
+
     public IEnumerator FadeTextToFullAlpha(float t, TMP_Text i)
     {
         i.color = new Color(i.color.r, i.color.g, i.color.b, 0);
