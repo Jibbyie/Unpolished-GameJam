@@ -20,7 +20,7 @@ public class GameManager : MonoBehaviour
     [SerializeField] private Sprite[] oxygenSprites; // Sprites from 0%, 20%, 40%, 60%, 80%, 100%.
 
     [Header("Audio")]
-    [SerializeField] private AudioSource audioSource; // The AudioSource component for playing sounds.
+    [SerializeField] private AudioSource audioSource; 
     [SerializeField] private AudioClip oxygenDecreaseSound;
     [SerializeField] private AudioClip oxygenIncreaseSound;
     [SerializeField] private AudioClip oxygenFullSound;

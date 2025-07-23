@@ -10,9 +10,9 @@ public class PlayerStats : MonoBehaviour
     public float maxOxygen = 100f;
     public float oxygenDepletionRate;
 
-    // Private variable to track the current oxygen bracket.
     private int currentOxygenBracket;
 
+    // Awake is called once when the script instance is being loaded, before the game starts.
     private void Awake()
     {
         gameManager = FindFirstObjectByType<GameManager>();
@@ -21,61 +21,75 @@ public class PlayerStats : MonoBehaviour
 
     private void Start()
     {
-        // Set the initial oxygen level and calculate the starting bracket.
+        // Set the player's oxygen to full at the beginning of the game.
         currentOxygen = maxOxygen;
+
+        // Calculate which UI bracket the oxygen level starts in.
         currentOxygenBracket = GetOxygenBracket();
+
+        // Tell the GameManager to display the correct starting UI image.
+        gameManager.OnOxygenStateChanged(currentOxygenBracket, currentOxygenBracket);
     }
 
     private void Update()
     {
-        // Deplete oxygen if the player is not in a replenishment zone.
+        // If the player is not in an oxygen zone, deplete their oxygen over time.
         if (!playerController.isReplenishingOxygen)
         {
             currentOxygen -= oxygenDepletionRate * Time.deltaTime;
         }
 
-        // Trigger a game over if oxygen runs out.
+        // If oxygen runs out, clamp it at zero and trigger a game over.
         if (currentOxygen <= 0)
         {
             currentOxygen = 0;
             gameManager.TriggerGameOver();
         }
 
-        // Check if the oxygen level has crossed a threshold.
+        // Check every frame if the oxygen level has crossed into a new bracket.
         CheckForStateChange();
     }
 
+    // Public function called by OxygenZone to add oxygen gradually over time.
     public void ReplenishOxygen(float amount)
     {
-        // Add oxygen over time and clamp it to the maximum value.
+        // Increase the current oxygen by the amount per second.
         currentOxygen += amount * Time.deltaTime;
+        // Ensure oxygen doesn't go above the maximum.
         if (currentOxygen >= maxOxygen)
         {
             currentOxygen = maxOxygen;
         }
+        // Check if this change caused the UI to enter a new state.
         CheckForStateChange();
     }
 
+    // Public function called by OxygenBubble to add a flat amount of oxygen instantly.
     public void AddOxygenBurst(float amount)
     {
-        // Add a flat amount of oxygen and clamp it to the maximum value.
+        // Increase the current oxygen by a flat value.
         currentOxygen += amount;
+        // Ensure oxygen doesn't go above the maximum.
         if (currentOxygen >= maxOxygen)
         {
             currentOxygen = maxOxygen;
         }
+        // Check if this change caused the UI to enter a new state.
         CheckForStateChange();
     }
 
-    // Checks if the oxygen has moved into a new 20% bracket.
+    // Compares the current oxygen bracket with the last known one to detect a change.
     private void CheckForStateChange()
     {
+        // Determine the current oxygen bracket.
         int newBracket = GetOxygenBracket();
 
-        // If the bracket is different from the last known one, notify the GameManager.
+        // If the bracket has changed since the last frame...
         if (newBracket != currentOxygenBracket)
         {
+            // ...tell the GameManager about the change to update the UI and play sounds.
             gameManager.OnOxygenStateChanged(newBracket, currentOxygenBracket);
+            // ...and update the stored bracket to the new one.
             currentOxygenBracket = newBracket;
         }
     }
@@ -83,11 +97,11 @@ public class PlayerStats : MonoBehaviour
     // Converts the current oxygen float value into an integer state (0-5).
     private int GetOxygenBracket()
     {
-        if (currentOxygen >= maxOxygen) return 5; // 90-100%
-        if (currentOxygen >= maxOxygen * 0.8f) return 4; // 80%
-        if (currentOxygen >= maxOxygen * 0.6f) return 3; // 60%
-        if (currentOxygen >= maxOxygen * 0.4f) return 2; // 40%
-        if (currentOxygen > 0) return 1; // 20%
-        return 0; // 0%
+        if (currentOxygen >= maxOxygen * 0.8f) return 5; // Return state 5 if oxygen is 80% or more.
+        if (currentOxygen >= maxOxygen * 0.6f) return 4; // Return state 4 if oxygen is 60% or more.
+        if (currentOxygen >= maxOxygen * 0.4f) return 3; // Return state 3 if oxygen is 40% or more.
+        if (currentOxygen >= maxOxygen * 0.2f) return 2; // Return state 2 if oxygen is 20% or more.
+        if (currentOxygen > 0) return 1;                  // Return state 1 if oxygen is above 0.
+        return 0;                                         // Return state 0 if oxygen is 0 or less.
     }
 }
