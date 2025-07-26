@@ -43,6 +43,36 @@ public class GameManager : MonoBehaviour
     private int itemsCollected = 0;
     private Coroutine runningFadeCoroutine;
     private bool isGameOver = false;
+    private bool isPaused = false;
+
+    private void Update()
+    {
+        // Check for pause input
+        if (Input.GetKeyDown(KeyCode.Space))
+        {
+            TogglePause();
+        }
+    }
+
+    public void TogglePause()
+    {
+        if (isGameOver) return;
+
+        isPaused = !isPaused;
+
+        if (isPaused)
+        {
+            Time.timeScale = 0f; 
+            // Pause all audio
+            AudioListener.pause = true;
+        }
+        else
+        {
+            Time.timeScale = 1f; 
+            // Resume all audio
+            AudioListener.pause = false;
+        }
+    }
 
     public void OnOxygenStateChanged(int newBracket, int oldBracket)
     {
