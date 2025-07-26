@@ -666,13 +666,18 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   player: {fileID: 0}
   modelTransform: {fileID: 0}
+  screenFader: {fileID: 0}
   speed: 0.5
   patrolDuration: 1000
-  timeToCatch: 5
-  minSpawnDistance: 20
-  maxSpawnDistance: 30
   swaySpeed: 2
   swayMagnitude: 20
+  minSpawnDistance: 20
+  maxSpawnDistance: 30
+  musicSource: {fileID: 0}
+  monsterAudioSource: {fileID: 0}
+  intenseTrack: {fileID: 0}
+  monsterGrowlSound: {fileID: 0}
+  monsterRoarSound: {fileID: 0}
 --- !u!50 &3281762706663451500
 Rigidbody2D:
   serializedVersion: 5

@@ -124,7 +124,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dc3ef51a5b268494c8221486abbf1618, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  oxygenReplenishRate: 2
+  oxygenReplenishRate: 4
 --- !u!70 &365817835733362272
 CapsuleCollider2D:
   m_ObjectHideFlags: 0

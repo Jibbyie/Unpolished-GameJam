@@ -4,6 +4,7 @@ public class PlayerMovement : MonoBehaviour
 {
     [SerializeField] private float playerSpeed = 5f;
     [SerializeField] private Rigidbody2D playerRB;
+    [SerializeField] private PlayerController playerController;
 
     //Add a reference for the child model
     [SerializeField] private Transform characterModel;
@@ -18,6 +19,7 @@ public class PlayerMovement : MonoBehaviour
         }
         // Get the Animator from the child object
         animator = GetComponentInChildren<Animator>();
+        playerController = GetComponent<PlayerController>();
     }
 
     private void FixedUpdate()
@@ -27,6 +29,11 @@ public class PlayerMovement : MonoBehaviour
 
     private void Move()
     {
+        if (!playerController.canMove) // Add this check
+        {
+            playerRB.linearVelocity = Vector2.zero; // Stop all movement
+            return;
+        }
         float horizontalInput = Input.GetAxis("Horizontal");
         float verticalInput = Input.GetAxis("Vertical");
 
